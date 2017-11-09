@@ -11,8 +11,24 @@ const storage = multer.diskStorage({
 });
 //init upload
 const upload = multer({
-    storage: storage
+    storage: storage,
+    fileFilter: function(req, file, cb) {
+        checkFileType(file, cb);
+    }
 }).single('myImage');
+
+//checkFiletype
+function checkFileType(file, cb) {
+    const fileType = /jpeg|jpg|png|gif/;
+    const extname = fileType.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = fileType.test(file.mimetype);
+
+    if (mimetype && extname) {
+        return cb(null, true);
+    } else {
+        cb("Error : Images Only!");
+    }
+}
 
 const app = express();
 const port = 3000;
@@ -26,7 +42,7 @@ app.get('/', (req, res) => res.render('views/index.html'));
 app.post('/upload', (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            console.log(JSON.parse({ msg: err }));
+            console.log({ msg: err });
         } else {
             console.log(req.file);
             res.send('test');
